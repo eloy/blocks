@@ -10,7 +10,7 @@ type Request struct {
 	writer http.ResponseWriter   // writer, assigned for the web server
 	serverRequest *http.Request // server request, assigned for the web server
 	route *Route                // route, assigned by the router.
-	controller interface{}      // Controller
+	controller Controller      // Controller
 
 	// Response
 	contentSet bool             // Has the content already set
@@ -37,9 +37,11 @@ func (r *Request) call() {
 
 	// Render the view if content isn't already set
 	if r.contentSet != true {
-		var v view
-		v.render(r)
+		v := NewView(r)
+		v.render()
 	}
+
+	r.flush()
 }
 
 // Instantiate a new controller and call the method
@@ -47,7 +49,7 @@ func (r *Request) callRequestMethod() {
 	t := r.route.typ
 	v := reflect.New(t)
 	initializeStruct(t, v.Elem())
-	c := v.Interface()
+	c := v.Interface()//.(*Controller)
 
 	r.controller = c
 

@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"reflect"
 	"log"
+	"strings"
 )
 
 
@@ -76,7 +77,13 @@ func (this *Router) Get(path string, controller interface{}, method string) (*Ro
 // }
 
 
+// Return the name lowercase and without controller
+// example: HomeController => home
 func (r *Route) ControllerName() string {
 	name := r.typ.Name()
-	return r.typ.Name()[:len(name) - 10]
+	return strings.ToLower(r.typ.Name()[:len(name) - 10])
+}
+
+func (r *Route) ActionName() string {
+	return strings.ToLower(r.method)
 }

@@ -1,32 +1,36 @@
 package blocks
 
 import (
-	"html/template"
+	"github.com/hoisie/mustache"
 	"path"
-	"strings"
 )
 
-const TEMPLATE_SUFIX = ".html.go"
+const TEMPLATE_SUFIX = ".mustache"
+const VIEWS_DIR = "views"
+const LAYOUTS_DIR = "layouts"
+const DEFAULT_LAYOUT = "application"
 
 type view struct {
+	request *Request
+	templateName string
+	templatePath string
 }
 
+func NewView(r *Request) view {
+	var v view
+	v.request = r
+	v.templateName = r.route.ActionName() + TEMPLATE_SUFIX
+	v.templatePath = path.Join(AppRootPath, VIEWS_DIR, r.route.ControllerName(), v.templateName)
+	return v
+}
 
-func (v view) render(r *Request) {
-	method := strings.ToLower(r.route.method)
-	template_name := method + TEMPLATE_SUFIX
-	controller_name := strings.ToLower(r.route.ControllerName())
+func (v view) render() {
+	layoutName := DEFAULT_LAYOUT + TEMPLATE_SUFIX
+	layoutPath := path.Join(AppRootPath, VIEWS_DIR, LAYOUTS_DIR, layoutName)
 
-	template_path := path.Join(AppRootPath, "views", controller_name, template_name)
+	content := string(assetContentFromFile(v.templatePath))
+	layout := string(assetContentFromFile(layoutPath))
 
-	t, err := template.New(template_name).ParseFiles(template_path)
-	if err != nil {
-		panic(err)
-	}
-
-	err = t.Execute(r.writer, r.controller)
-	if err != nil {
-		panic(err)
-	}
-
+	v.request.body = mustache.RenderInLayout(content, layout, v.request.controller)
+	v.request.code = 200
 }

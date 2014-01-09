@@ -1,4 +1,4 @@
 * Dependencies
 #+BEGIN_SRC sh
-
+  go get github.com/hoisie/mustache
 #+END_SRC

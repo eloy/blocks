@@ -11,11 +11,15 @@ type Dispatcher interface {
 }
 
 
-type Controller struct {
+type Controller interface {
+}
+
+type ApplicationController struct {
 	request *Request
+	ViewTemplate string
 }
 
 
-func (ctrl Controller) Dispatch(w http.ResponseWriter, r *http.Request) {
+func (ctrl ApplicationController) Dispatch(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hi there, I love %s!", r.URL.Path[1:])
 }
