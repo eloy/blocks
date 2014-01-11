@@ -1,4 +1,11 @@
 * Dependencies
+** Build dependencies
 #+BEGIN_SRC sh
   go get github.com/hoisie/mustache
+#+END_SRC
+
+** Test dependencies
+#+BEGIN_SRC sh
+  go get github.com/onsi/ginkgo
+  go get github.com/onsi/gomega
 #+END_SRC

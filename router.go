@@ -5,40 +5,27 @@ import (
 	"reflect"
 	"log"
 	"strings"
+	"regexp"
 )
 
-
-type Pathed interface {
-	Path() string
-}
-
-type Route struct {
-	typ reflect.Type
-	parent Pathed
-	path string
-	method string
-}
-
 type Router struct {
+	RouteNode
+	rootRoute *Route
 }
 
-var routes = make([]*Route, 0)
-
-func addRoute(r *Route) {
-	routes = append(routes, r)
+func newRouter() *Router {
+	r := new(Router)
+	r.RouteNode.initialize()
+	return r
 }
 
-
-func findRoute(path string) *Route {
-	for _, r := range routes {
-		if path == r.path {
-			return r
-		}
-	}
-	panic("Route not found")
+func (this *Router) Path() string {
+	return "/"
 }
 
 
+
+// Server the requests
 func (this *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	request := &Request{writer: w, serverRequest: r}
@@ -50,40 +37,41 @@ func (this *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	request.route = findRoute(r.URL.Path)
-	request.call()
+	route, found := this.Find(request)
+	if found {
+		request.route = route
+		request.call()
+	}
 
+	// TODO Not Found
 
 }
 
 
-func (this *Router) Get(path string, controller interface{}, method string) (*Route) {
-	r := new(Route)
-	r.typ = reflect.TypeOf(controller)
-	r.path = path
-	r.method = method
-	addRoute(r)
+func (this *Router) Root(controller interface{}, action string) (*Route) {
+	r := newRoute("/", controller, action)
+	r.parent = this
+	this.rootRoute = r
 	return r
+}
 
+func (this *Router) Find(path Pather) (*Route, bool)  {
+	if path.Path() == "/" {
+		return this.rootRoute, true
+	}
+	return this.findChildrens(path)
 }
 
 
-
-// func (this *Router) Resources(controller interface{}) (*Route) {
-// 	r := new(Route)
-// 	r.typ = reflect.TypeOf(controller)
-// 	addRoute(r)
-// 	return r
-// }
-
-
-// Return the name lowercase and without controller
-// example: HomeController => home
-func (r *Route) ControllerName() string {
-	name := r.typ.Name()
-	return strings.ToLower(r.typ.Name()[:len(name) - 10])
+var cleanupPathRegexp = regexp.MustCompile("/+")
+func httpJoin(strs ...string) string {
+	path := strings.Join(strs, "/")
+	return cleanupPathRegexp.ReplaceAllString(path, "/")
 }
 
-func (r *Route) ActionName() string {
-	return strings.ToLower(r.method)
+
+func extractControllerName(t reflect.Type) string {
+	name := t.Name()
+	return strings.ToLower(name[:len(name) - 10])
+
 }

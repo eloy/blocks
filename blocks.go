@@ -7,7 +7,7 @@ import(
 )
 
 
-var R = new(Router)
+var R = newRouter()
 
 // Root path accessor
 var root_path string

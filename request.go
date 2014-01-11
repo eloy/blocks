@@ -16,7 +16,6 @@ type Request struct {
 	contentSet bool             // Has the content already set
 	body string                 // Response body
 	code int                    // HTML status code
-
 }
 
 
@@ -25,6 +24,7 @@ func (r *Request) setResponse(code int, body string) {
 	r.body = body
 	r.code = code
 }
+
 
 func (r *Request) flush() {
 	r.writer.WriteHeader(r.code)
@@ -44,9 +44,13 @@ func (r *Request) call() {
 	r.flush()
 }
 
+func (r *Request) Path() string {
+	return r.serverRequest.URL.Path
+}
+
 // Instantiate a new controller and call the method
 func (r *Request) callRequestMethod() {
-	t := r.route.typ
+	t := r.route.controllerT
 	v := reflect.New(t)
 	initializeStruct(t, v.Elem())
 	c := v.Interface()//.(*Controller)
