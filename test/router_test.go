@@ -113,6 +113,23 @@ var _ = Describe("Router", func() {
 			Expect(route.ActionName()).To(Equal("bar"))
 		})
 
+		It("should manage complex namespaces", func() {
+			blocks.R.Root(HomeController{}, "Index")
+			api := blocks.R.Namespace("api")
+			api.Resources(FooController{})
+			apiAdmin := api.Namespace("admin")
+			apiAdmin.Resources(BarController{})
+
+			path := m.NewMockPather(m.NewCtrl())
+			path.EXPECT().Path().Return("/api/admin/bar/").AnyTimes()
+
+			route, found := blocks.R.Find(path)
+
+			Expect(found).To(BeTrue())
+			Expect(route.ControllerName()).To(Equal("bar"))
+			Expect(route.ActionName()).To(Equal("index"))
+
+		})
 	})
 
 })

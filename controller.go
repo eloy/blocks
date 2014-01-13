@@ -1,8 +1,8 @@
 package blocks
 
 import (
-	"fmt"
 	"net/http"
+	"encoding/json"
 )
 
 
@@ -12,6 +12,8 @@ type Dispatcher interface {
 
 
 type Controller interface {
+	RenderJson(interface{})
+	setRequest(*Request)
 }
 
 type ApplicationController struct {
@@ -19,7 +21,15 @@ type ApplicationController struct {
 	ViewTemplate string
 }
 
+func (this *ApplicationController) setRequest(r *Request) {
+	this.request = r
+}
 
-func (ctrl ApplicationController) Dispatch(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hi there, I love %s!", r.URL.Path[1:])
+func (this *ApplicationController) RenderJson(object interface{}) {
+	json, err := json.Marshal(object)
+	if err != nil {
+		panic(err)
+	}
+
+	this.request.setResponse(200, string(json))
 }

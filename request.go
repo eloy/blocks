@@ -10,7 +10,7 @@ type Request struct {
 	writer http.ResponseWriter   // writer, assigned for the web server
 	serverRequest *http.Request // server request, assigned for the web server
 	route *Route                // route, assigned by the router.
-	controller Controller      // Controller
+	scope map[string]string
 
 	// Response
 	contentSet bool             // Has the content already set
@@ -18,6 +18,13 @@ type Request struct {
 	code int                    // HTML status code
 }
 
+func newRequest(w http.ResponseWriter, r *http.Request) *Request {
+	request := new(Request)
+	request.writer = w
+	request.serverRequest = r
+	request.scope = make(map[string]string)
+	return request
+}
 
 func (r *Request) setResponse(code int, body string) {
 	r.contentSet = true
@@ -31,14 +38,17 @@ func (r *Request) flush() {
 	fmt.Fprint(r.writer, r.body)
 }
 
+
+// Execute the request
 func (r *Request) call() {
+
 	// Call the controller for the route
-	r.callRequestMethod()
+	controller := r.callRequestMethod()
 
 	// Render the view if content isn't already set
 	if r.contentSet != true {
 		v := NewView(r)
-		v.render()
+		r.setResponse(v.render(controller))
 	}
 
 	r.flush()
@@ -49,17 +59,17 @@ func (r *Request) Path() string {
 }
 
 // Instantiate a new controller and call the method
-func (r *Request) callRequestMethod() {
+func (r *Request) callRequestMethod() Controller {
 	t := r.route.controllerT
 	v := reflect.New(t)
 	initializeStruct(t, v.Elem())
-	c := v.Interface()//.(*Controller)
+	controller := v.Interface().(Controller)
 
-	r.controller = c
-
+	controller.setRequest(r)
 
 	// Call the method
-	reflect.ValueOf(c).MethodByName(r.route.method).Call(nil)
+	reflect.ValueOf(controller).MethodByName(r.route.method).Call(nil)
+	return controller
 }
 // http://stackoverflow.com/questions/7850140/how-do-you-create-a-new-instance-of-a-struct-from-its-type-at-runtime-in-go
 func initializeStruct(t reflect.Type, v reflect.Value) {

@@ -37,8 +37,7 @@ func (this *RouteNode) initialize() {
 }
 
 func (this *RouteNode) Get(path string, controller interface{}, action string) (*Route) {
-	r := newRoute(path, controller, action)
-	r.parent = this
+	r := newRoute(this, path, controller, action)
 	this.addRoute(r)
 	return r
 }
@@ -62,9 +61,9 @@ func (this *RouteNode) Resources(controller interface{}) (Routable) {
 
 
 	// Index
-	r.Get(path, controller, "Index")
+	r.Get("/", controller, "Index")
 	// Edit
-	r.Get(path + "/edit/:Id", controller, "Edit")
+	r.Get("/edit/:Id", controller, "Edit")
 
 	return r
 }

@@ -14,8 +14,9 @@ type Route struct {
 	pathRegExp *regexp.Regexp
 }
 
-func newRoute(path string, controller interface{}, action string) *Route {
+func newRoute(parent Routable, path string, controller interface{}, action string) *Route {
 	r := new(Route)
+	r.parent = parent
 	r.RouteNode.initialize()
 	r.controllerT = reflect.TypeOf(controller)
 	r.setPath(path)
@@ -31,7 +32,8 @@ func (this *Route) setPath(path string) {
 	this.path = path
 
 	// Replace variables with regexp
-	replaced := routeVarsReplaceRegExp.ReplaceAllString(path, routeVarsReplacement)
+	replaced := routeVarsReplaceRegExp.ReplaceAllString(this.Path(), routeVarsReplacement)
+
 	this.pathRegExp = regexp.MustCompile(replaced)
 }
 var routeVarsReplaceRegExp = regexp.MustCompile(`:([\w]+)`)

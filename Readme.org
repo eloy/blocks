@@ -1,11 +1,19 @@
-* Dependencies
-** Build dependencies
+* Blocks
+Another web framework for Go.
+** Dependencies
+*** Build
 #+BEGIN_SRC sh
   go get github.com/hoisie/mustache
 #+END_SRC
 
-** Test dependencies
+*** Test
 #+BEGIN_SRC sh
-  go get github.com/onsi/ginkgo
-  go get github.com/onsi/gomega
+    go get github.com/onsi/ginkgo
+    go get github.com/onsi/gomega
+    go get code.google.com/p/gomock/gomock
+#+END_SRC
+
+*** Development
+#+BEGIN_SRC sh
+   go install code.google.com/p/gomock/mockgen
 #+END_SRC

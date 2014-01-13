@@ -28,7 +28,8 @@ func (this *Router) Path() string {
 // Server the requests
 func (this *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
-	request := &Request{writer: w, serverRequest: r}
+	request := newRequest(w, r)
+
 	defer func() {
 		if err := recover(); err != nil {
 			log.Println("ERROR:", err)
@@ -49,8 +50,7 @@ func (this *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 
 func (this *Router) Root(controller interface{}, action string) (*Route) {
-	r := newRoute("/", controller, action)
-	r.parent = this
+	r := newRoute(this, "/", controller, action)
 	this.rootRoute = r
 	return r
 }
