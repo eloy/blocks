@@ -7,11 +7,18 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+func newPather(method string, path string) blocks.Pather {
+	p := m.NewMockPather(m.NewCtrl())
+	p.EXPECT().Path().Return(path).AnyTimes()
+	p.EXPECT().Method().Return(method).AnyTimes()
+	return p
+}
+
+
 var _ = Describe("Router", func() {
 	type HomeController struct {
 		blocks.ApplicationController
 	}
-
 
 	type FooController struct {
 		blocks.ApplicationController
@@ -33,6 +40,7 @@ var _ = Describe("Router", func() {
 		rootRoute = blocks.R.Root(HomeController{}, "Index")
 		homeRoute = blocks.R.Get("/home", FooController{}, "Home")
 		barRoute = blocks.R.Namespace("api").Get("bar/:name", BarController{}, "Bar")
+		blocks.R.Resources(WadusController{})
 	})
 
 
@@ -62,20 +70,17 @@ var _ = Describe("Router", func() {
 		It("Should return true if the given path match the route", func() {
 
 			// Route /
-			path := m.NewMockPather(m.NewCtrl())
-			path.EXPECT().Path().Return("/").AnyTimes()
+			path := newPather("GET", "/")
 			Expect(homeRoute.Match(path)).ToNot(BeTrue())
 			Expect(barRoute.Match(path)).ToNot(BeTrue())
 
 			// Route /home
-			path = m.NewMockPather(m.NewCtrl())
-			path.EXPECT().Path().Return("/home").AnyTimes()
+			path = newPather("GET", "/home")
 			Expect(homeRoute.Match(path)).To(BeTrue())
 			Expect(barRoute.Match(path)).ToNot(BeTrue())
 
 			// Route /api/bar/test
-			path = m.NewMockPather(m.NewCtrl())
-			path.EXPECT().Path().Return("/api/bar/test").AnyTimes()
+			path = newPather("GET", "/api/bar/test")
 			Expect(homeRoute.Match(path)).ToNot(BeTrue())
 			Expect(barRoute.Match(path)).To(BeTrue())
 		})
@@ -86,8 +91,7 @@ var _ = Describe("Router", func() {
 	Describe("Find()", func() {
 
 		It("Should return the route configured for the root path", func() {
-			path := m.NewMockPather(m.NewCtrl())
-			path.EXPECT().Path().Return("/").AnyTimes()
+			path := newPather("GET", "/")
 			route, found := blocks.R.Find(path)
 			Expect(found).To(BeTrue())
 			Expect(route.ControllerName()).To(Equal("home"))
@@ -96,8 +100,7 @@ var _ = Describe("Router", func() {
 
 
 		It("Should work with simple rules", func() {
-			path := m.NewMockPather(m.NewCtrl())
-			path.EXPECT().Path().Return("/home").AnyTimes()
+			path := newPather("GET", "/home")
 			route, found := blocks.R.Find(path)
 			Expect(found).To(BeTrue())
 			Expect(route.ControllerName()).To(Equal("foo"))
@@ -105,8 +108,7 @@ var _ = Describe("Router", func() {
 		})
 
 		It("Should work with namespaces", func() {
-			path := m.NewMockPather(m.NewCtrl())
-			path.EXPECT().Path().Return("/api/bar/test").AnyTimes()
+			path := newPather("GET", "/api/bar/test")
 			route, found := blocks.R.Find(path)
 			Expect(found).To(BeTrue())
 			Expect(route.ControllerName()).To(Equal("bar"))
@@ -120,8 +122,7 @@ var _ = Describe("Router", func() {
 			apiAdmin := api.Namespace("admin")
 			apiAdmin.Resources(BarController{})
 
-			path := m.NewMockPather(m.NewCtrl())
-			path.EXPECT().Path().Return("/api/admin/bar/").AnyTimes()
+			path := newPather("GET", "/api/admin/bar/")
 
 			route, found := blocks.R.Find(path)
 

@@ -23,8 +23,6 @@ func (this *Router) Path() string {
 	return "/"
 }
 
-
-
 // Server the requests
 func (this *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
@@ -40,7 +38,7 @@ func (this *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	route, found := this.Find(request)
 	if found {
-		request.route = route
+		request.setRoute(route)
 		request.call()
 	}
 
@@ -50,7 +48,7 @@ func (this *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 
 func (this *Router) Root(controller interface{}, action string) (*Route) {
-	r := newRoute(this, "/", controller, action)
+	r := newRoute(this, "GET", "/", controller, action)
 	this.rootRoute = r
 	return r
 }

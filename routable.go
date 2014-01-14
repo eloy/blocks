@@ -6,6 +6,7 @@ import (
 
 type Pather interface {
 	Path() string
+	Method() string
 }
 
 type Routable interface {
@@ -37,7 +38,25 @@ func (this *RouteNode) initialize() {
 }
 
 func (this *RouteNode) Get(path string, controller interface{}, action string) (*Route) {
-	r := newRoute(this, path, controller, action)
+	r := newRoute(this, "GET", path, controller, action)
+	this.addRoute(r)
+	return r
+}
+
+func (this *RouteNode) Post(path string, controller interface{}, action string) (*Route) {
+	r := newRoute(this, "POST", path, controller, action)
+	this.addRoute(r)
+	return r
+}
+
+func (this *RouteNode) Put(path string, controller interface{}, action string) (*Route) {
+	r := newRoute(this, "PUT", path, controller, action)
+	this.addRoute(r)
+	return r
+}
+
+func (this *RouteNode) Delete(path string, controller interface{}, action string) (*Route) {
+	r := newRoute(this, "DELETE", path, controller, action)
 	this.addRoute(r)
 	return r
 }
@@ -60,10 +79,13 @@ func (this *RouteNode) Resources(controller interface{}) (Routable) {
 	this.addRoute(r)
 
 
-	// Index
 	r.Get("/", controller, "Index")
-	// Edit
-	r.Get("/edit/:Id", controller, "Edit")
+	r.Get("/:Id", controller, "Show")
+	r.Get("/:Id/:edit", controller, "Edit")
+	r.Get("/new", controller, "New")
+	r.Post("/", controller, "Create")
+	r.Put("/:Id", controller, "Update")
+	r.Delete("/:Id", controller, "Destroy")
 
 	return r
 }

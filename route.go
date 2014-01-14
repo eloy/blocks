@@ -11,16 +11,19 @@ type Route struct {
 	RouteNode
 	controllerT reflect.Type
 	method string
+	action string
 	pathRegExp *regexp.Regexp
+
 }
 
-func newRoute(parent Routable, path string, controller interface{}, action string) *Route {
+func newRoute(parent Routable, method string, path string, controller interface{}, action string) *Route {
 	r := new(Route)
 	r.parent = parent
 	r.RouteNode.initialize()
 	r.controllerT = reflect.TypeOf(controller)
+	r.method = method
 	r.setPath(path)
-	r.method = action
+	r.action = action
 
 	return r
 }
@@ -41,6 +44,9 @@ const routeVarsReplacement = "(?P<$1>.+)"
 
 
 func (this *Route) Match(p Pather) bool {
+	if p.Method() != this.method {
+		return false
+	}
 	return this.pathRegExp.MatchString(p.Path())
 }
 
@@ -67,7 +73,7 @@ func (r *Route) ControllerName() string {
 }
 
 func (r *Route) ActionName() string {
-	return strings.ToLower(r.method)
+	return strings.ToLower(r.action)
 }
 
 func (this *Route) Inspect() {
