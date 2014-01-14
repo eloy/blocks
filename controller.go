@@ -18,20 +18,23 @@ type Controller interface {
 }
 
 type ApplicationController struct {
-	request *Request
-	ViewTemplate string
 	Session SessionManager
+
+	// Private fields
+	request *Request
 }
 
 func (this *ApplicationController) setRequest(r *Request) {
 	this.request = r
 }
 
+func (this *ApplicationController) Params(key string) string {
+	return this.request.serverRequest.FormValue(key)
+}
+
 func (this *ApplicationController) sessionManager(s SessionManager) {
 	this.Session = s
 }
-
-
 
 func (this *ApplicationController) RenderJson(object interface{}) {
 	json, err := json.Marshal(object)
@@ -40,4 +43,14 @@ func (this *ApplicationController) RenderJson(object interface{}) {
 	}
 
 	this.request.setResponse(200, string(json))
+}
+
+func (this *ApplicationController) RedirectTo(url string) {
+	this.request.writer.Header()["location"] = []string{url}
+	this.request.setResponse(302, "")
+}
+
+
+func (this *ApplicationController) RenderTemplate(template string) {
+	this.request.template = template
 }

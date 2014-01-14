@@ -17,7 +17,7 @@ type view struct {
 
 func NewView(r *Request) view {
 	var v view
-	v.templateName = r.route.ActionName() + TEMPLATE_SUFIX
+	v.templateName = r.template + TEMPLATE_SUFIX
 	v.templatePath = path.Join(AppRootPath, VIEWS_DIR, r.route.ControllerName(), v.templateName)
 	return v
 }

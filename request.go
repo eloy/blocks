@@ -13,6 +13,7 @@ type Request struct {
 	scope map[string]string
 
 	// Response
+	template string             // Template
 	contentSet bool             // Has the content already set
 	body string                 // Response body
 	code int                    // HTML status code
@@ -24,6 +25,11 @@ func newRequest(w http.ResponseWriter, r *http.Request) *Request {
 	request.serverRequest = r
 	request.scope = make(map[string]string)
 	return request
+}
+
+func (this *Request) setRoute(route *Route) {
+	this.route = route
+	this.template = route.action
 }
 
 func (r *Request) setResponse(code int, body string) {
@@ -58,6 +64,10 @@ func (r *Request) Path() string {
 	return r.serverRequest.URL.Path
 }
 
+func (r *Request) Method() string {
+	return r.serverRequest.Method
+}
+
 // Instantiate a new controller and call the method
 func (r *Request) callRequestMethod() Controller {
 	t := r.route.controllerT
@@ -75,7 +85,7 @@ func (r *Request) callRequestMethod() Controller {
 
 
 	// Call the method
-	reflect.ValueOf(controller).MethodByName(r.route.method).Call(nil)
+	reflect.ValueOf(controller).MethodByName(r.route.action).Call(nil)
 
 	s.save()
 
