@@ -67,8 +67,18 @@ func (r *Request) callRequestMethod() Controller {
 
 	controller.setRequest(r)
 
+	// Start the session
+	s := newSessionManager(r)
+	s.read()
+	controller.sessionManager(s)
+
+
+
 	// Call the method
 	reflect.ValueOf(controller).MethodByName(r.route.method).Call(nil)
+
+	s.save()
+
 	return controller
 }
 // http://stackoverflow.com/questions/7850140/how-do-you-create-a-new-instance-of-a-struct-from-its-type-at-runtime-in-go
