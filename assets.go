@@ -35,6 +35,8 @@ func assetsRequestHandler(w http.ResponseWriter, r *http.Request) {
 
 func EnableAssetsPipeline() {
 	peace.AddSource("js", path.Join(AppRootPath, "assets", "js"))
+	peace.AddSource("css", path.Join(AppRootPath, "assets", "css"))
 	peace.AddVendorSource("js", path.Join(AppRootPath, "vendor", "assets", "js"))
+	peace.AddVendorSource("css", path.Join(AppRootPath, "vendor", "assets", "css"))
 	http.HandleFunc("/assets/", assetsRequestHandler)
 }
