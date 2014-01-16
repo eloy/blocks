@@ -6,6 +6,7 @@ import (
 	"log"
 	"strings"
 	"regexp"
+	"runtime/debug"
 )
 
 type Router struct {
@@ -33,6 +34,7 @@ func (this *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			log.Println("ERROR:", err)
 			http.Error(w, (err.(error)).Error(), http.StatusInternalServerError)
 			// fmt.Fprintf(w, "ERROR %v", err)
+			debug.PrintStack()
 		}
 	}()
 
