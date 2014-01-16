@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"log"
 	"strings"
+	"path"
 	"regexp"
 	"runtime/debug"
 )
@@ -44,8 +45,10 @@ func (this *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		request.call()
 	}
 
-	// TODO Not Found
-
+	// If not found, use a fileServer
+	public := path.Join(AppRootPath, "public")
+	server := http.FileServer(http.Dir(public))
+	server.ServeHTTP(w,r)
 }
 
 
