@@ -7,13 +7,17 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/base64"
+	"strconv"
 	"io"
 	"log"
 )
 
 type SessionManager interface {
 	Set(string, string)
-	Get(string) string
+	SetInt(string, int)
+	Get(string) (string, bool)
+	GetInt(string) (int, bool)
+	Delete(string)
 }
 
 type sessionManager struct {
@@ -50,8 +54,30 @@ func (this *sessionManager) Set(key string, value string) {
 	this.session[key] = value
 }
 
-func (this *sessionManager) Get(key string) string {
-	return this.session[key]
+func (this *sessionManager) SetInt(key string, value int) {
+	this.session[key] = strconv.Itoa(value)
+}
+
+func (this *sessionManager) Get(key string) (string, bool) {
+	val, found := this.session[key]
+	return val, found
+}
+
+func (this *sessionManager) GetInt(key string) (int, bool) {
+	val, found := this.session[key]
+	if !found {
+		return 0, false
+	}
+	intVal, err := strconv.Atoi(val)
+	if err != nil {
+		log.Println(err)
+		return 0, false
+	}
+	return intVal, true
+}
+
+func (this *sessionManager) Delete(key string) {
+	delete(this.session, key)
 }
 
 
