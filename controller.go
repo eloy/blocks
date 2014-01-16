@@ -10,31 +10,43 @@ type Dispatcher interface {
 	Dispatch(http.ResponseWriter, *http.Request)
 }
 
+type Filter func(Controller)
 
 type Controller interface {
 	RenderJson(interface{})
+	RedirectTo(string)
+	Session() SessionManager
 	setRequest(*Request)
-	sessionManager(SessionManager)
+	Initialize()
 }
 
-type ApplicationController struct {
-	Session SessionManager
 
+type ApplicationController struct {
 	// Private fields
 	request *Request
+}
+
+
+func (this *ApplicationController) Initialize() {
 }
 
 func (this *ApplicationController) setRequest(r *Request) {
 	this.request = r
 }
 
-func (this *ApplicationController) Params(key string) string {
-	return this.request.serverRequest.FormValue(key)
+func (this *ApplicationController) Param(key string) string {
+	return this.request.serverRequest.Form.Get(key)
 }
 
-func (this *ApplicationController) sessionManager(s SessionManager) {
-	this.Session = s
+func (this *ApplicationController) Session() SessionManager {
+	return this.request.session
 }
+
+
+
+// View Helpers
+//----------------------------------------------------------------------
+
 
 func (this *ApplicationController) RenderJson(object interface{}) {
 	json, err := json.Marshal(object)

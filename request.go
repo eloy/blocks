@@ -12,8 +12,12 @@ type Request struct {
 	route *Route                // route, assigned by the router.
 	scope map[string]string
 
+
+	// Controller scope vars
+	template string                       // Template
+	session *sessionManager
+
 	// Response
-	template string             // Template
 	contentSet bool             // Has the content already set
 	body string                 // Response body
 	code int                    // HTML status code
@@ -47,7 +51,6 @@ func (r *Request) flush() {
 
 // Execute the request
 func (r *Request) call() {
-
 	// Call the controller for the route
 	controller := r.callRequestMethod()
 
@@ -77,17 +80,19 @@ func (r *Request) callRequestMethod() Controller {
 
 	controller.setRequest(r)
 
+	// Parse params
+	r.serverRequest.ParseForm()
+
 	// Start the session
-	s := newSessionManager(r)
-	s.read()
-	controller.sessionManager(s)
+	r.session = newSessionManager(r)
+	r.session.read()
 
-
+	controller.Initialize()
 
 	// Call the method
 	reflect.ValueOf(controller).MethodByName(r.route.action).Call(nil)
 
-	s.save()
+	r.session.save()
 
 	return controller
 }
