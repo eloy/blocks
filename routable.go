@@ -78,11 +78,11 @@ func (this *RouteNode) Resources(controller interface{}) (Routable) {
 	r.parent = this
 	this.addRoute(r)
 
-
-	r.Get("/", controller, "Index")
-	r.Get("/:Id", controller, "Show")
 	r.Get("/:Id/:edit", controller, "Edit")
 	r.Get("/new", controller, "New")
+	r.Get("/:Id", controller, "Show")
+	r.Get("/", controller, "Index")
+
 	r.Post("/", controller, "Create")
 	r.Put("/:Id", controller, "Update")
 	r.Delete("/:Id", controller, "Destroy")
