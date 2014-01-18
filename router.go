@@ -28,6 +28,11 @@ func (this *Router) Path() string {
 // Server the requests
 func (this *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
+	if err := r.ParseForm(); err != nil {
+		panic(err)
+	}
+
+	log.Println("Serving Request", r.Method, r.URL, r.PostForm)
 	request := newRequest(w, r)
 
 	defer func() {
@@ -43,12 +48,13 @@ func (this *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if found {
 		request.setRoute(route)
 		request.call()
+	} else {
+		// If not found, use a fileServer
+		public := path.Join(AppRootPath, "public")
+		server := http.FileServer(http.Dir(public))
+		server.ServeHTTP(w,r)
 	}
 
-	// If not found, use a fileServer
-	public := path.Join(AppRootPath, "public")
-	server := http.FileServer(http.Dir(public))
-	server.ServeHTTP(w,r)
 }
 
 
