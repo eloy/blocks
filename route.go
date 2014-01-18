@@ -32,6 +32,11 @@ func newRoute(parent Routable, method string, path string, controller interface{
 // Replace variables for regular expressions
 // and compile the regexp with the path
 func (this *Route) setPath(path string) {
+
+	if strings.HasSuffix(path, "/") {
+		path = path + "?"
+	}
+
 	this.path = path
 
 	// Replace variables with regexp
