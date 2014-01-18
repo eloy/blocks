@@ -34,6 +34,9 @@ func (this *ApplicationController) setRequest(r *Request) {
 	this.request = r
 }
 
+// Params
+//----------------------------------------------------------------------
+
 func (this *ApplicationController) Param(key string) string {
 	return this.request.serverRequest.Form.Get(key)
 }
@@ -42,6 +45,11 @@ func (this *ApplicationController) Session() SessionManager {
 	return this.request.session
 }
 
+func (this *ApplicationController) DecodeJsonBody(model interface{}) error {
+	decoder := json.NewDecoder(this.request.serverRequest.Body)
+	err := decoder.Decode(model)
+	return err
+}
 
 
 // View Helpers

@@ -80,9 +80,6 @@ func (r *Request) callRequestMethod() Controller {
 
 	controller.setRequest(r)
 
-	// Parse params
-	r.serverRequest.ParseForm()
-
 	// Start the session
 	r.session = newSessionManager(r)
 	r.session.read()
