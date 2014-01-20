@@ -78,15 +78,27 @@ func (this *RouteNode) Resources(controller interface{}) (Routable) {
 	r.parent = this
 	this.addRoute(r)
 
-	r.Get("/:Id/:edit", controller, "Edit")
+	r.Get("/:id/edit", controller, "Edit")
 	r.Get("/new", controller, "New")
-	r.Get("/:Id", controller, "Show")
+	r.Get("/:id", controller, "Show")
 	r.Get("/", controller, "Index")
 
 	r.Post("/", controller, "Create")
-	r.Put("/:Id", controller, "Update")
-	r.Delete("/:Id", controller, "Destroy")
+	r.Put("/:id", controller, "Update")
+	r.Delete("/:id", controller, "Destroy")
 
+	return r
+}
+
+func (this *RouteNode) Member() (Routable) {
+	r := newRouteNode()
+	p := this.path
+	if strings.HasPrefix(p, "/") {
+		p = p[1:len(p)]
+	}
+	r.path = "/:" + p + "_id"
+	r.parent = this
+	this.addRoute(r)
 	return r
 }
 
@@ -109,18 +121,14 @@ func (this *RouteNode) Match(p Pather) bool {
 	return false
 }
 
-func (this *RouteNode) Find(path Pather) (*Route, bool)  {
-	return this.findChildrens(path)
+func (this *RouteNode) Search(matches *RoutableCollection, path Pather)  {
+	this.findChildrens(matches, path)
 }
 
-func (this *RouteNode) findChildrens(p Pather) (*Route, bool)  {
+func (this *RouteNode) findChildrens(matches *RoutableCollection, p Pather)  {
 	for _, r := range this.routes {
-		route, found := r.Find(p)
-		if found {
-			return route, true
-		}
+		r.Search(matches, p)
 	}
-	return nil, false
 }
 
 func (this *RouteNode) Inspect() {

@@ -10,7 +10,7 @@ type Request struct {
 	writer http.ResponseWriter   // writer, assigned for the web server
 	serverRequest *http.Request // server request, assigned for the web server
 	route *Route                // route, assigned by the router.
-	scope map[string]string
+	routeParams map[string]string
 
 
 	// Controller scope vars
@@ -27,13 +27,13 @@ func newRequest(w http.ResponseWriter, r *http.Request) *Request {
 	request := new(Request)
 	request.writer = w
 	request.serverRequest = r
-	request.scope = make(map[string]string)
 	return request
 }
 
 func (this *Request) setRoute(route *Route) {
 	this.route = route
 	this.template = route.action
+	this.parseRouteParams()
 }
 
 func (r *Request) setResponse(code int, body string) {
@@ -69,6 +69,17 @@ func (r *Request) Path() string {
 
 func (r *Request) Method() string {
 	return r.serverRequest.Method
+}
+
+func (this *Request) parseRouteParams() {
+	this.routeParams = map[string]string{}
+	matchNames := this.route.pathRegExp.SubexpNames()
+	matchs := this.route.pathRegExp.FindAllStringSubmatch(this.Path(), -1)[0]
+
+	for i, n := range matchs {
+		fmt.Printf("%d. match='%s'\tname='%s'\n", i, n, matchNames[i])
+		this.routeParams[matchNames[i]] = n
+	}
 }
 
 // Instantiate a new controller and call the method

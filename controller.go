@@ -3,6 +3,7 @@ package blocks
 import (
 	"net/http"
 	"encoding/json"
+	"strconv"
 )
 
 
@@ -38,8 +39,24 @@ func (this *ApplicationController) setRequest(r *Request) {
 //----------------------------------------------------------------------
 
 func (this *ApplicationController) Param(key string) string {
+	// Try first with request params
+	param, found := this.request.routeParams[key]
+	if found {
+		return param
+	}
 	return this.request.serverRequest.Form.Get(key)
 }
+
+func (this *ApplicationController) ParamInt(key string) int {
+	value := this.Param(key)
+	if value != "" {
+		if intVal, err := strconv.Atoi(value); err == nil {
+			return intVal
+		}
+	}
+	return 0
+}
+
 
 func (this *ApplicationController) Session() SessionManager {
 	return this.request.session
@@ -48,6 +65,9 @@ func (this *ApplicationController) Session() SessionManager {
 func (this *ApplicationController) DecodeJsonBody(model interface{}) error {
 	decoder := json.NewDecoder(this.request.serverRequest.Body)
 	err := decoder.Decode(model)
+	if err != nil {
+		panic(err)
+	}
 	return err
 }
 
