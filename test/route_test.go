@@ -12,7 +12,6 @@ var _ = Describe("Route", func() {
 		blocks.ApplicationController
 	}
 
-
 	type FooController struct {
 		blocks.ApplicationController
 	}
@@ -27,14 +26,14 @@ var _ = Describe("Route", func() {
 
 	var (
 		rootRoute, homeRoute, barRoute *blocks.Route
-		testInt int
 	)
 
+
 	BeforeEach(func() {
+		blocks.R.Reset()
 		rootRoute = blocks.R.Root(HomeController{}, "Index")
 		homeRoute = blocks.R.Get("/home", FooController{}, "Home")
 		barRoute = blocks.R.Namespace("api").Get("bar/:name", BarController{}, "Bar")
-		testInt = 1
 	})
 
 

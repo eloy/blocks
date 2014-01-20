@@ -37,10 +37,10 @@ var _ = Describe("Router", func() {
 	)
 
 	BeforeEach(func() {
+		blocks.R.Reset()
 		rootRoute = blocks.R.Root(HomeController{}, "Index")
-		homeRoute = blocks.R.Get("/home", FooController{}, "Home")
+		homeRoute = blocks.R.Get("/home", HomeController{}, "Home")
 		barRoute = blocks.R.Namespace("api").Get("bar/:name", BarController{}, "Bar")
-		blocks.R.Resources(WadusController{})
 	})
 
 
@@ -90,6 +90,11 @@ var _ = Describe("Router", func() {
 	//--------------------------------------------------------------------
 	Describe("Find()", func() {
 
+		BeforeEach(func() {
+			wadus := blocks.R.Resources(WadusController{})
+			wadus.Member().Resources(FooController{})
+		})
+
 		It("Should return the route configured for the root path", func() {
 			path := newPather("GET", "/")
 			route, found := blocks.R.Find(path)
@@ -103,7 +108,7 @@ var _ = Describe("Router", func() {
 			path := newPather("GET", "/home")
 			route, found := blocks.R.Find(path)
 			Expect(found).To(BeTrue())
-			Expect(route.ControllerName()).To(Equal("foo"))
+			Expect(route.ControllerName()).To(Equal("home"))
 			Expect(route.ActionName()).To(Equal("home"))
 		})
 
@@ -118,7 +123,7 @@ var _ = Describe("Router", func() {
 		It("should manage complex namespaces", func() {
 			blocks.R.Root(HomeController{}, "Index")
 			api := blocks.R.Namespace("api")
-			api.Resources(FooController{})
+			api.Resources(HomeController{})
 			apiAdmin := api.Namespace("admin")
 			apiAdmin.Resources(BarController{})
 
@@ -129,8 +134,89 @@ var _ = Describe("Router", func() {
 			Expect(found).To(BeTrue())
 			Expect(route.ControllerName()).To(Equal("bar"))
 			Expect(route.ActionName()).To(Equal("index"))
-
 		})
+
+		It("Should work with resources", func() {
+			blocks.R.Resources(WadusController{})
+			route, found := blocks.R.Find(newPather("GET", "/wadus"))
+			Expect(found).To(BeTrue())
+			Expect(route.ControllerName()).To(Equal("wadus"))
+			Expect(route.ActionName()).To(Equal("index"))
+
+			route, found = blocks.R.Find(newPather("GET", "/wadus/3"))
+			Expect(found).To(BeTrue())
+			Expect(route.ControllerName()).To(Equal("wadus"))
+			Expect(route.ActionName()).To(Equal("show"))
+
+			route, found = blocks.R.Find(newPather("GET", "/wadus/3/edit"))
+			Expect(found).To(BeTrue())
+			Expect(route.ControllerName()).To(Equal("wadus"))
+			Expect(route.ActionName()).To(Equal("edit"))
+
+			route, found = blocks.R.Find(newPather("GET", "/wadus/new"))
+			Expect(found).To(BeTrue())
+			Expect(route.ControllerName()).To(Equal("wadus"))
+			Expect(route.ActionName()).To(Equal("new"))
+
+			route, found = blocks.R.Find(newPather("POST", "/wadus"))
+			Expect(found).To(BeTrue())
+			Expect(route.ControllerName()).To(Equal("wadus"))
+			Expect(route.ActionName()).To(Equal("create"))
+
+			route, found = blocks.R.Find(newPather("PUT", "/wadus/3"))
+			Expect(found).To(BeTrue())
+			Expect(route.ControllerName()).To(Equal("wadus"))
+			Expect(route.ActionName()).To(Equal("update"))
+
+			route, found = blocks.R.Find(newPather("DELETE", "/wadus/3"))
+			Expect(found).To(BeTrue())
+			Expect(route.ControllerName()).To(Equal("wadus"))
+			Expect(route.ActionName()).To(Equal("destroy"))
+		})
+
+		It("Should work with resources of resources members", func() {
+			blocks.R.Reset()
+			wadus := blocks.R.Resources(WadusController{})
+			wadus.Member().Resources(FooController{})
+
+
+			route, found := blocks.R.Find(newPather("GET", "/wadus/1/foo"))
+			Expect(found).To(BeTrue())
+			Expect(route.ControllerName()).To(Equal("foo"))
+			Expect(route.ActionName()).To(Equal("index"))
+
+			route, found = blocks.R.Find(newPather("GET", "/wadus/1/foo/3"))
+			Expect(found).To(BeTrue())
+			Expect(route.ControllerName()).To(Equal("foo"))
+			Expect(route.ActionName()).To(Equal("show"))
+
+			route, found = blocks.R.Find(newPather("GET", "/wadus/1/foo/3/edit"))
+			Expect(found).To(BeTrue())
+			Expect(route.ControllerName()).To(Equal("foo"))
+			Expect(route.ActionName()).To(Equal("edit"))
+
+			route, found = blocks.R.Find(newPather("GET", "/wadus/1/foo/new"))
+			Expect(found).To(BeTrue())
+			Expect(route.ControllerName()).To(Equal("foo"))
+			Expect(route.ActionName()).To(Equal("new"))
+
+			route, found = blocks.R.Find(newPather("POST", "/wadus/1/foo"))
+			Expect(found).To(BeTrue())
+			Expect(route.ControllerName()).To(Equal("foo"))
+			Expect(route.ActionName()).To(Equal("create"))
+
+			route, found = blocks.R.Find(newPather("PUT", "/wadus/1/foo/3"))
+			Expect(found).To(BeTrue())
+			Expect(route.ControllerName()).To(Equal("foo"))
+			Expect(route.ActionName()).To(Equal("update"))
+
+			route, found = blocks.R.Find(newPather("DELETE", "/wadus/1/foo/3"))
+			Expect(found).To(BeTrue())
+			Expect(route.ControllerName()).To(Equal("foo"))
+			Expect(route.ActionName()).To(Equal("destroy"))
+		})
+
+
 	})
 
 })

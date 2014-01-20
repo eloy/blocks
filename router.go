@@ -57,6 +57,11 @@ func (this *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// Clean the router. Used in tests
+func (this *Router) Reset() {
+	this.rootRoute = nil
+	this.RouteNode.initialize()
+}
 
 func (this *Router) Root(controller interface{}, action string) (*Route) {
 	r := newRoute(this, "GET", "/", controller, action)
@@ -68,7 +73,28 @@ func (this *Router) Find(path Pather) (*Route, bool)  {
 	if path.Path() == "/" {
 		return this.rootRoute, true
 	}
-	return this.findChildrens(path)
+	matches := new(RoutableCollection)
+	this.findChildrens(matches, path)
+
+	switch len(matches.routes) {
+	case 0:
+		return nil, false
+	case 1:
+		return matches.routes[0], true
+	default:
+		size := 0
+		var c *Route
+		for _, route := range(matches.routes) {
+			if current_size := len(route.Path()); current_size > size {
+				size = current_size
+				c = route
+			}
+		}
+		if size != 0 {
+			return c, true
+		}
+	}
+	return nil, false
 }
 
 

@@ -45,29 +45,28 @@ func (this *Route) setPath(path string) {
 	this.pathRegExp = regexp.MustCompile(replaced)
 }
 var routeVarsReplaceRegExp = regexp.MustCompile(`:([\w]+)`)
-const routeVarsReplacement = "(?P<$1>.+)"
+const routeVarsReplacement = `(?P<$1>[\w]+)`
 
 
 func (this *Route) Match(p Pather) bool {
 	if p.Method() != this.method {
 		return false
 	}
-	return this.pathRegExp.MatchString(p.Path())
+
+	res := this.pathRegExp.MatchString(p.Path())
+	// log.Println("Matching request ", p.Path(), ":", p.Method(), "with", this.Path(), "Controller", this.ControllerName(), ":", this.ActionName(), "Res:", res)
+	return res
 }
 
 // Find Routes
-func (this *Route) Find(request Pather) (*Route, bool)  {
+func (this *Route) Search(matches *RoutableCollection, request Pather) {
 	// Find first in childrens
-	route, found := this.findChildrens(request)
-	if found {
-		return route, true
-	}
+	this.findChildrens(matches, request)
 
 	// if childrens don't match, try to with the route itself
 	if this.Match(request) {
-		return this, true;
+		matches.add(this)
 	}
-	return nil, false
 }
 
 

@@ -2,6 +2,7 @@ package blocks
 
 import (
 	"reflect"
+	"strings"
 )
 
 type Pather interface {
@@ -11,21 +12,30 @@ type Pather interface {
 
 type Routable interface {
 	Path() string
-	Find(Pather) (*Route, bool)
+	Search(*RoutableCollection, Pather)
 	Match(Pather) bool
 	Inspect()
 
 	Get(string, interface{}, string) *Route
+	Post(string, interface{}, string) *Route
+	Put(string, interface{}, string) *Route
+	Delete(string, interface{}, string) *Route
 	Resources(interface{}) Routable
+	Member() Routable
 	Namespace(string) Routable
 }
 
+type RoutableCollection struct {
+	routes []*Route
+}
 
 type RouteNode struct {
 	parent Routable
 	path string
 	routes []Routable
 }
+
+
 
 func newRouteNode() *RouteNode {
 	r := new(RouteNode)
@@ -135,4 +145,14 @@ func (this *RouteNode) Inspect() {
 	for _, r := range this.routes {
 		r.Inspect()
 	}
+}
+
+
+
+// RoutableCollection
+//----------------------------------------------------------------------
+
+
+func (this *RoutableCollection) add(r *Route) {
+	this.routes = append(this.routes, r)
 }
