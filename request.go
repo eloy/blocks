@@ -77,7 +77,6 @@ func (this *Request) parseRouteParams() {
 	matchs := this.route.pathRegExp.FindAllStringSubmatch(this.Path(), -1)[0]
 
 	for i, n := range matchs {
-		fmt.Printf("%d. match='%s'\tname='%s'\n", i, n, matchNames[i])
 		this.routeParams[matchNames[i]] = n
 	}
 }
