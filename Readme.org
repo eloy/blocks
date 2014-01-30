@@ -1,9 +1,10 @@
 * Blocks
-Another web framework for Go.
+  Another web framework for Go.
 ** Dependencies
 *** Build
 #+BEGIN_SRC sh
   go get github.com/hoisie/mustache
+  go get github.com/harlock/goson
 #+END_SRC
 
 *** Test

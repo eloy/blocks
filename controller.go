@@ -3,6 +3,7 @@ package blocks
 import (
 	"net/http"
 	"encoding/json"
+	"github.com/harlock/goson"
 	"strconv"
 )
 
@@ -15,6 +16,7 @@ type Filter func(Controller)
 
 type Controller interface {
 	RenderJson(interface{})
+	RenderGoson(goson.Goson)
 	RedirectTo(string)
 	Session() SessionManager
 	setRequest(*Request)
@@ -92,6 +94,16 @@ func (this *ApplicationController) RenderJson(object interface{}) {
 
 	this.request.setResponse(200, string(json))
 }
+
+func (this *ApplicationController) RenderGoson(g goson.Goson) {
+	json, err := g.ToJson()
+	if err != nil {
+		panic(err)
+	}
+
+	this.request.setResponse(200, string(json))
+}
+
 
 func (this *ApplicationController) RedirectTo(url string) {
 	this.request.writer.Header()["location"] = []string{url}
