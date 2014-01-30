@@ -75,6 +75,14 @@ func (this *ApplicationController) DecodeJsonBody(model interface{}) error {
 // View Helpers
 //----------------------------------------------------------------------
 
+func (this *ApplicationController) Forbidden() {
+	this.request.setResponse(403, "Forbidden")
+}
+
+func (this *ApplicationController) BadRequest() {
+	this.request.setResponse(400, "Bad Request")
+}
+
 
 func (this *ApplicationController) RenderJson(object interface{}) {
 	json, err := json.Marshal(object)
